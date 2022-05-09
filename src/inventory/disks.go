@@ -200,10 +200,7 @@ func (d *disks) checkEligibility(disk *ghw.Disk) (notEligibleReasons []string, i
 }
 
 func (d *disks) IsPhysicalDisk(disk *block.Disk) bool {
-	return !((strings.HasPrefix(disk.Name, "dm-") && !d.isMultipath(disk)) || // Device mapper devices, except multipath (includes LVM, crypt, etc)
-		strings.HasPrefix(disk.Name, "loop") || // Loop devices (see `man loop`)
-		strings.HasPrefix(disk.Name, "zram") || // Default name usually assigned to "swap on ZRAM" block devices
-		strings.HasPrefix(disk.Name, "md")) // Linux multiple-device-driver block devices
+	return true
 }
 
 func (d *disks) getDisks() []*models.Disk {
