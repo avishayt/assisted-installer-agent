@@ -43,7 +43,7 @@ build-%: $(BIN) src/$* #lint
 build-image:
 	docker build ${CONTAINER_BUILD_PARAMS} -f Dockerfile.assisted_installer_agent . -t $(ASSISTED_INSTALLER_AGENT)
 
-push: build-image subsystem
+push: build-image #subsystem
 	docker push $(ASSISTED_INSTALLER_AGENT)
 
 _test: $(REPORTS)

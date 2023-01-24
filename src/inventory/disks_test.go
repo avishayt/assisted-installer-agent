@@ -205,14 +205,16 @@ func createExpectedSDBModelDisk() *models.Disk {
 	}
 }
 
-/**
+/*
+*
 SDA disk is real disk data from a bare metal machine.
 */
 func createSDADisk() *ghw.Disk {
 	return createDisk("sda", 0, "6141877064533b0020adf3bb03167694", "0x6141877064533b0020adf3bb03167694")
 }
 
-/**
+/*
+*
 SDB disk is real disk data from a bare metal machine.
 */
 func createSDBDisk() *ghw.Disk {
@@ -562,6 +564,67 @@ var _ = Describe("Disks test", func() {
 			"Disk appears to be an ISO installation media (has partition with type iso9660)",
 		}
 		expectedDisks[1].IsInstallationMedia = true
+
+		// Make sure regular disks don't get marked as installation media
+		expectedDisks[2].InstallationEligibility.Eligible = true
+		expectedDisks[2].IsInstallationMedia = false
+
+		mockFetchDisks(dependencies, nil, blockInfo.Disks...)
+		ret := GetDisks(&config.SubprocessConfig{}, dependencies)
+		Expect(ret).To(Equal(expectedDisks))
+	})
+
+	It("allows appliance disk", func() {
+		blockInfo, expectedDisks := prepareDisksTest(dependencies, 3)
+
+		blockInfo.Disks[0].Partitions = []*ghw.Partition{
+			{
+				Disk:       nil,
+				Name:       "partition1",
+				Label:      "partition1-label",
+				MountPoint: "/media/iso",
+				SizeBytes:  5555,
+				Type:       "ext4",
+				IsReadOnly: false,
+			},
+			{
+				Disk:       nil,
+				Name:       "partition2",
+				Label:      "agentdata",
+				MountPoint: "",
+				SizeBytes:  5555,
+				Type:       "ext4",
+				IsReadOnly: false,
+			},
+		}
+		expectedDisks[0].InstallationEligibility.Eligible = true
+		expectedDisks[0].InstallationEligibility.NotEligibleReasons = nil
+		expectedDisks[0].IsInstallationMedia = false
+
+		blockInfo.Disks[1].Partitions = []*ghw.Partition{
+			{
+				Disk:       nil,
+				Name:       "partition2",
+				Label:      "partition2-label",
+				MountPoint: "/some/mount/point",
+				SizeBytes:  5555,
+				Type:       "iso9660",
+				IsReadOnly: false,
+			},
+			{
+				Disk:       nil,
+				Name:       "partition2",
+				Label:      "agentdata",
+				MountPoint: "",
+				SizeBytes:  5555,
+				Type:       "ext4",
+				IsReadOnly: false,
+			},
+		}
+
+		expectedDisks[1].InstallationEligibility.Eligible = true
+		expectedDisks[1].InstallationEligibility.NotEligibleReasons = nil
+		expectedDisks[1].IsInstallationMedia = false
 
 		// Make sure regular disks don't get marked as installation media
 		expectedDisks[2].InstallationEligibility.Eligible = true

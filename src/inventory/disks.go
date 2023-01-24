@@ -241,6 +241,13 @@ func (d *disks) checkEligibility(disk *ghw.Disk) (notEligibleReasons []string, i
 		notEligibleReasons = append(notEligibleReasons, "Disk is an LVM logical volume")
 	}
 
+	// Don't check partitions if this is an appliance disk
+	for _, partition := range disk.Partitions {
+		if partition.Label == "agentdata" {
+			return notEligibleReasons, false
+		}
+	}
+
 	// Check disk partitions for type, name, and mount points:
 	for _, partition := range disk.Partitions {
 		if partition.Type == "iso9660" {
